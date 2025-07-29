@@ -89,16 +89,16 @@ This document provides a detailed breakdown of the tasks required to build, test
     *   **Dependencies:** Task 4
     *   **Context:** This task makes the driver useful by broadcasting data for other nodes to consume.
     *   **Subtasks:**
-        *   [ ] Create and switch to a new feature branch: `git checkout -b feature/publishing`.
-        *   [ ] Add `sensor_msgs` and `geometry_msgs` as dependencies.
-        *   [ ] Declare publishers for `sensor_msgs::msg::NavSatFix` (`gps/fix`) and `sensor_msgs::msg::Imu` (`gps/imu`).
-        *   [ ] Implement methods to populate and publish these messages from the parsed `PVTSLNData` struct. This includes the heading-to-quaternion conversion.
+        *   [x] Create and switch to a new feature branch: `git checkout -b feature/publishing`.
+        *   [x] Add `sensor_msgs` and `geometry_msgs` as dependencies.
+        *   [x] Declare publishers for `sensor_msgs::msg::NavSatFix` (`gps/fix`) and `sensor_msgs::msg::Imu` (`gps/imu`).
+        *   [x] Implement methods to populate and publish these messages from the parsed `PVTSLNData` struct. This includes the heading-to-quaternion conversion.
     *   **Intermediate Test:**
-        *   [ ] Build and run the node.
-        *   [ ] Use `ros2 topic echo` on `/gps/fix` and `/gps/imu` to verify the messages are published correctly and at the expected rate.
+        *   [x] Build and run the node.
+        *   [x] Use `ros2 topic echo` on `/gps/fix` and `/gps/imu` to verify the messages are published correctly and at the expected rate.
     *   **Version Control:**
-        *   [ ] Commit the publisher implementation to the `feature/publishing` branch.
-        *   [ ] Merge the `feature/publishing` branch back into the `main` branch.
+        *   [x] Commit the publisher implementation to the `feature/publishing` branch.
+        *   [x] Merge the `feature/publishing` branch back into the `main` branch.
 
 ### Phase 5: Automatic Configuration and Parameterization
 
