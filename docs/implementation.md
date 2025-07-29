@@ -48,16 +48,16 @@ This document provides a detailed breakdown of the tasks required to build, test
     *   **Dependencies:** Task 2
     *   **Context:** This task focuses on integrating a C++ serial library to read data from the physical hardware.
     *   **Subtasks:**
-        *   [ ] Create and switch to a new feature branch: `git checkout -b feature/serial-comms`.
-        *   [ ] Add a suitable C++ serial library (e.g., `serial`) as a dependency.
-        *   [ ] In the `UnicoreDriverNode` class, add logic to open and configure the serial port with hardcoded values for initial testing (e.g., `/dev/ttyUSB0`, `230400`). Include robust error handling.
-        *   [ ] Create an `rclcpp::Timer` to periodically call a `readSerialData` method.
-        *   [ ] Implement the `readSerialData` method to read lines from the serial port and log them using `RCLCPP_INFO`.
+        *   [x] Create and switch to a new feature branch: `git checkout -b feature/serial-comms`.
+        *   [x] Add a suitable C++ serial library (e.g., `serial`) as a dependency.
+        *   [x] In the `UnicoreDriverNode` class, add logic to open and configure the serial port with hardcoded values for initial testing (e.g., `/dev/ttyUSB0`, `230400`). Include robust error handling.
+        *   [x] Create an `rclcpp::Timer` to periodically call a `readSerialData` method.
+        *   [x] Implement the `readSerialData` method to read lines from the serial port and log them using `RCLCPP_INFO`.
     *   **Intermediate Test:**
-        *   [ ] Connect the UM982. Build and run the node.
-        *   [ ] Verify that raw `PVTSLN` messages are continuously printed to the terminal.
+        *   [x] Connect the UM982. Build and run the node.
+        *   [x] Verify that raw `PVTSLN` messages are continuously printed to the terminal.
     *   **Version Control:**
-        *   [ ] Commit the changes to the `feature/serial-comms` branch.
+        *   [x] Commit the changes to the `feature/serial-comms` branch.
         *   [ ] Merge the `feature/serial-comms` branch back into the `main` branch.
 
 ### Phase 3: Data Parsing and Structuring
