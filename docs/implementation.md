@@ -10,15 +10,15 @@ This document provides a detailed breakdown of the tasks required to build, test
     *   **Dependencies:** None
     *   **Context:** This task creates the version control structure for the project, ensuring all subsequent work is tracked.
     *   **Subtasks:**
-        *   [ ] Create a new remote repository (e.g., on GitHub or GitLab) named `unicore_um982_driver`.
-        *   [ ] Clone the empty repository to your local development machine.
-        *   [ ] Create a `README.md` file with an initial project title.
-        *   [ ] Create a `.gitignore` file tailored for ROS 2 and C++ projects. This should include common build artifacts like `build/`, `install/`, `log/`, and editor-specific files.
-        *   [ ] Add and commit the `README.md` and `.gitignore` files to the `main` branch.
-        *   [ ] Push the initial commit to the remote repository.
+        *   [x] Create a new remote repository (e.g., on GitHub or GitLab) named `unicore_um982_driver`.
+        *   [x] Clone the empty repository to your local development machine.
+        *   [x] Create a `README.md` file with an initial project title.
+        *   [x] Create a `.gitignore` file tailored for ROS 2 and C++ projects. This should include common build artifacts like `build/`, `install/`, `log/`, and editor-specific files.
+        *   [x] Add and commit the `README.md` and `.gitignore` files to the `main` branch.
+        *   [x] Push the initial commit to the remote repository.
     *   **Intermediate Test:**
-        *   [ ] The remote repository should contain the `README.md` and `.gitignore` files.
-        *   [ ] Running `git status` in the local repository should report that the working tree is clean.
+        *   [x] The remote repository should contain the `README.md` and `.gitignore` files.
+        *   [x] Running `git status` in the local repository should report that the working tree is clean.
 
 ### Phase 1: Core Node Setup and Compilation
 
