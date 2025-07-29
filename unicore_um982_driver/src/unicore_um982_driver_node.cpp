@@ -1,6 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <serial_driver/serial_driver.hpp>
 #include <io_context/io_context.hpp>
+#include <unicore_um982_driver/pvtsln_data.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -106,7 +107,22 @@ private:
             
             // Check if this is a PVTSLN message
             if (line.find("PVTSLN") != std::string::npos) {
-                RCLCPP_INFO(this->get_logger(), "PVTSLN: %s", line.c_str());
+                RCLCPP_INFO(this->get_logger(), "Raw PVTSLN: %s", line.c_str());
+                
+                // Parse the PVTSLN message
+                unicore_um982_driver::PVTSLNData parsed_data;
+                if (unicore_um982_driver::parsePVTSLN(line, parsed_data)) {
+                    RCLCPP_INFO(this->get_logger(), 
+                        "Parsed PVTSLN - Status: %s, Lat: %.8f, Lon: %.8f, Alt: %.3f, Heading: %.2f, Sats: %d", 
+                        parsed_data.position_status.c_str(),
+                        parsed_data.latitude, 
+                        parsed_data.longitude, 
+                        parsed_data.altitude, 
+                        parsed_data.heading,
+                        parsed_data.num_satellites_tracked);
+                } else {
+                    RCLCPP_WARN(this->get_logger(), "Failed to parse PVTSLN message");
+                }
             }
         }
     }

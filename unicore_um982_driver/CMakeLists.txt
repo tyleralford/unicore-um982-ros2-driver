@@ -11,8 +11,16 @@ find_package(rclcpp REQUIRED)
 find_package(serial_driver REQUIRED)
 
 # Add executable
-add_executable(unicore_um982_driver_node src/unicore_um982_driver_node.cpp)
+add_executable(unicore_um982_driver_node 
+  src/unicore_um982_driver_node.cpp
+  src/pvtsln_parser.cpp
+)
 ament_target_dependencies(unicore_um982_driver_node rclcpp serial_driver)
+
+# Include directories
+target_include_directories(unicore_um982_driver_node PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 # Install executable
 install(TARGETS

@@ -58,7 +58,7 @@ This document provides a detailed breakdown of the tasks required to build, test
         *   [x] Verify that raw `PVTSLN` messages are continuously printed to the terminal.
     *   **Version Control:**
         *   [x] Commit the changes to the `feature/serial-comms` branch.
-        *   [ ] Merge the `feature/serial-comms` branch back into the `main` branch.
+        *   [x] Merge the `feature/serial-comms` branch back into the `main` branch.
 
 ### Phase 3: Data Parsing and Structuring
 
