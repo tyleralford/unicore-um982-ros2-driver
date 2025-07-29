@@ -28,17 +28,17 @@ This document provides a detailed breakdown of the tasks required to build, test
     *   **Dependencies:** Task 1
     *   **Context:** This task creates the fundamental directory structure and build files for the driver node within the version-controlled workspace.
     *   **Subtasks:**
-        *   [ ] From the `main` branch, create and switch to a new feature branch: `git checkout -b feature/core-node`.
-        *   [ ] Use `ros2 pkg create` to generate a new package named `unicore_um982_driver` with a build type of `ament_cmake` and a dependency on `rclcpp`.
-        *   [ ] Populate the `package.xml` with the author, license, and description.
-        *   [ ] Create a `src/unicore_um982_driver_node.cpp` file with a minimal `rclcpp::Node` class and a `main` function.
-        *   [ ] Add the executable to `CMakeLists.txt` and link it against `rclcpp`.
+        *   [x] From the `main` branch, create and switch to a new feature branch: `git checkout -b feature/core-node`.
+        *   [x] Use `ros2 pkg create` to generate a new package named `unicore_um982_driver` with a build type of `ament_cmake` and a dependency on `rclcpp`.
+        *   [x] Populate the `package.xml` with the author, license, and description.
+        *   [x] Create a `src/unicore_um982_driver_node.cpp` file with a minimal `rclcpp::Node` class and a `main` function.
+        *   [x] Add the executable to `CMakeLists.txt` and link it against `rclcpp`.
     *   **Intermediate Test:**
-        *   [ ] Run `colcon build`. The build must complete without errors.
-        *   [ ] Source `install/setup.bash` and run `ros2 run unicore_um982_driver unicore_um982_driver_node`. The node should start and run without crashing.
+        *   [x] Run `colcon build`. The build must complete without errors.
+        *   [x] Source `install/setup.bash` and run `ros2 run unicore_um982_driver unicore_um982_driver_node`. The node should start and run without crashing.
     *   **Version Control:**
-        *   [ ] Commit all the new package files to the `feature/core-node` branch with a clear message (e.g., "feat: Initial ROS 2 package structure").
-        *   [ ] Merge the `feature/core-node` branch back into the `main` branch.
+        *   [x] Commit all the new package files to the `feature/core-node` branch with a clear message (e.g., "feat: Initial ROS 2 package structure").
+        *   [x] Merge the `feature/core-node` branch back into the `main` branch.
 
 ### Phase 2: Serial Communication and Data Ingestion
 

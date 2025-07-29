@@ -8,10 +8,11 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(serial_driver REQUIRED)
 
 # Add executable
 add_executable(unicore_um982_driver_node src/unicore_um982_driver_node.cpp)
-ament_target_dependencies(unicore_um982_driver_node rclcpp)
+ament_target_dependencies(unicore_um982_driver_node rclcpp serial_driver)
 
 # Install executable
 install(TARGETS
