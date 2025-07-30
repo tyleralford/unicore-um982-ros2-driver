@@ -5,6 +5,7 @@
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
+#include <diagnostic_updater/diagnostic_updater.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,7 +19,7 @@ using namespace drivers::common;
 class UnicoreDriverNode : public rclcpp::Node
 {
 public:
-    UnicoreDriverNode() : Node("unicore_um982_driver"), io_context_(1)
+    UnicoreDriverNode() : Node("unicore_um982_driver"), io_context_(1), diagnostic_updater_(this)
     {
         RCLCPP_INFO(this->get_logger(), "Unicore UM982 Driver Node started");
         
@@ -37,7 +38,7 @@ public:
         this->declare_parameter("ntrip_user", "user");
         this->declare_parameter("ntrip_pass", "password");
         
-        RCLCPP_INFO(this->get_logger(), "Declared parameters: port, baudrate, config_commands, and NTRIP client parameters");
+        RCLCPP_DEBUG(this->get_logger(), "Declared parameters: port, baudrate, config_commands, and NTRIP client parameters");
         
         // Create ROS 2 publishers
         gps_fix_publisher_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", 10);
@@ -48,10 +49,24 @@ public:
         // Initialize serial communication
         initializeSerial();
         
+        // Initialize diagnostic updater
+        diagnostic_updater_.setHardwareID("UM982_GPS");
+        diagnostic_updater_.add("RTK GPS", this, &UnicoreDriverNode::diagnosisCallback);
+        
+        // Initialize diagnostic state
+        last_fix_status_ = "UNKNOWN";
+        last_satellite_count_ = 0;
+        last_data_time_ = this->now();
+        
         // Create timer for reading serial data
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(50),  // 20Hz as per requirements
             std::bind(&UnicoreDriverNode::readSerialData, this));
+            
+        // Create timer for diagnostic updates (1Hz)
+        diagnostic_timer_ = this->create_wall_timer(
+            std::chrono::seconds(1),
+            [this]() { diagnostic_updater_.force_update(); });
     }
 
     ~UnicoreDriverNode()
@@ -207,6 +222,11 @@ private:
         msg.position_covariance_type = sensor_msgs::msg::NavSatFix::COVARIANCE_TYPE_DIAGONAL_KNOWN;
         
         gps_fix_publisher_->publish(msg);
+        
+        // Update diagnostic state
+        last_fix_status_ = data.position_status;
+        last_satellite_count_ = data.num_satellites_tracked;
+        last_data_time_ = this->now();
     }
     
     void publishImu(const unicore_um982_driver::PVTSLNData& data)
@@ -300,12 +320,53 @@ private:
         }
     }
 
+    void diagnosisCallback(diagnostic_updater::DiagnosticStatusWrapper &stat)
+    {
+        // Check data freshness
+        auto current_time = this->now();
+        auto time_since_last_data = (current_time - last_data_time_).seconds();
+        
+        // Determine overall health status
+        if (time_since_last_data > 5.0) {
+            stat.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "No GPS data received");
+            stat.add("Status", "NO_DATA");
+            stat.add("Time since last data (s)", std::to_string(time_since_last_data));
+        } else if (last_fix_status_ == "RTK_FIXED") {
+            stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "RTK Fix acquired");
+            stat.add("Status", "RTK_FIXED");
+        } else if (last_fix_status_ == "RTK_FLOAT") {
+            stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "RTK Float solution");
+            stat.add("Status", "RTK_FLOAT");
+        } else if (last_fix_status_ == "DGPS") {
+            stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "DGPS solution");
+            stat.add("Status", "DGPS");
+        } else if (last_fix_status_ == "SINGLE") {
+            stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "Single point positioning");
+            stat.add("Status", "SINGLE");
+        } else {
+            stat.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Unknown GPS status");
+            stat.add("Status", last_fix_status_);
+        }
+        
+        // Add satellite information
+        stat.add("Satellite count", std::to_string(last_satellite_count_));
+        stat.add("Fix status", last_fix_status_);
+        stat.add("Data age (s)", std::to_string(time_since_last_data));
+    }
+
     // Member variables
     IoContext io_context_;
     std::unique_ptr<SerialDriver> serial_driver_;
     rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::TimerBase::SharedPtr diagnostic_timer_;
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr gps_fix_publisher_;
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr gps_imu_publisher_;
+    diagnostic_updater::Updater diagnostic_updater_;
+    
+    // Diagnostic state variables
+    std::string last_fix_status_;
+    int last_satellite_count_;
+    rclcpp::Time last_data_time_;
 };
 
 int main(int argc, char **argv)

@@ -173,26 +173,26 @@ This document provides a detailed breakdown of the tasks required to build, test
         *   [x] Commit the updated YAML file to the `feature/ntrip-params` branch.
         *   [x] Merge the `feature/ntrip-params` branch back into the `main` branch.
 
-*   #### **Task 9: Create the ROS 2 Launch File**
+*   #### **Task 9: Create the ROS 2 Launch File** ✅ **COMPLETE**
     *   **Dependencies:** Task 8
     *   **Context:** This task provides a single, parameterized entry point for running the entire system, including the driver node and the prerequisite `str2str` NTRIP client.
     *   **Subtasks:**
-        *   [ ] Create and switch to a new feature branch: `git checkout -b feature/launch-file`.
-        *   [ ] Create a `launch/unicore.launch.py` file.
-        *   [ ] Add a `Node` action to start the driver, loading the `unicore_driver_params.yaml` file.
-        *   [ ] In the launch file, add logic to read the NTRIP parameters from the loaded configuration.
-        *   [ ] Construct the full NTRIP URL string for `str2str` in the format `ntrip://<user>:<pass>@<server>:<port>/<mountpoint>`.
-        *   [ ] Add an `ExecuteProcess` action to run the `str2str` command. The command will be configured to stream data from the constructed NTRIP URL to the driver's serial port. Set `respawn=True` to ensure the client restarts if it fails.
-        *   [ ] Add logic to the launch file to check for the existence of the `str2str` executable on the system and log a clear error message if it is not found.
-        *   [ ] Install the `launch` and `config` directories in `CMakeLists.txt`.
+        *   [x] Create and switch to a new feature branch: `git checkout -b feature/launch-file`.
+        *   [x] Create a `launch/unicore.launch.py` file.
+        *   [x] Add a `Node` action to start the driver, loading the `unicore_driver_params.yaml` file.
+        *   [x] In the launch file, add logic to read the NTRIP parameters from the loaded configuration.
+        *   [x] Construct the full NTRIP URL string for `str2str` in the format `ntrip://<user>:<pass>@<server>:<port>/<mountpoint>`.
+        *   [x] Add an `ExecuteProcess` action to run the `str2str` command. The command will be configured to stream data from the constructed NTRIP URL to the driver's serial port. Set `respawn=True` to ensure the client restarts if it fails.
+        *   [x] Add logic to the launch file to check for the existence of the `str2str` executable on the system and log a clear error message if it is not found.
+        *   [x] Install the `launch` and `config` directories in `CMakeLists.txt`.
     *   **Intermediate Test:**
         *   [ ] Install `str2str` manually.
-        *   [ ] Run `ros2 launch unicore_um982_driver unicore.launch.py`.
-        *   [ ] Verify both the driver node and the `str2str` process are running.
+        *   [x] Run `ros2 launch unicore_um982_driver unicore.launch.py`.
+        *   [x] Verify both the driver node and the `str2str` process are running.
         *   [ ] Verify that the GPS fix status, observed via `ros2 topic echo /gps/fix`, eventually indicates an RTK fix.
     *   **Version Control:**
-        *   [ ] Commit the launch file and associated changes to the `feature/launch-file` branch.
-        *   [ ] Merge the `feature/launch-file` branch back into the `main` branch.
+        *   [x] Commit the launch file and associated changes to the `feature/launch-file` branch.
+        *   [x] Merge the `feature/launch-file` branch back into the `main` branch.
 
 ### Phase 7: Diagnostics and Finalization
 

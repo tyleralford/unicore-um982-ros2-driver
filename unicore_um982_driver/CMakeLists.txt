@@ -11,13 +11,14 @@ find_package(rclcpp REQUIRED)
 find_package(serial_driver REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 
 # Add executable
 add_executable(unicore_um982_driver_node 
   src/unicore_um982_driver_node.cpp
   src/pvtsln_parser.cpp
 )
-ament_target_dependencies(unicore_um982_driver_node rclcpp serial_driver sensor_msgs geometry_msgs)
+ament_target_dependencies(unicore_um982_driver_node rclcpp serial_driver sensor_msgs geometry_msgs diagnostic_updater)
 
 # Include directories
 target_include_directories(unicore_um982_driver_node PRIVATE
