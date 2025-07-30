@@ -158,20 +158,38 @@ This document provides a detailed breakdown of the tasks required to build, test
 
 ### Phase 6: System Integration and RTK Handling
 
-**Goal:** Create a launch file to orchestrate the driver and the external NTRIP client.
+**Goal:** Integrate the external `str2str` NTRIP client and create a launch file to orchestrate the driver and the client using ROS 2 parameters.
 
-*   #### **Task 8: Create the ROS 2 Launch File**
+*   #### **Task 8: Add NTRIP Client Parameterization**
     *   **Dependencies:** Task 7
-    *   **Context:** This task provides a single entry point for running the entire system.
+    *   **Context:** This task adds ROS 2 parameters to the YAML configuration file to allow for flexible setup of the external `str2str` NTRIP client. `str2str` is a prerequisite for this package.
+    *   **Subtasks:**
+        *   [ ] Create and switch to a new feature branch: `git checkout -b feature/ntrip-params`.
+        *   [ ] In the `config/unicore_driver_params.yaml` file, add new parameters required for the NTRIP client: `ntrip_server`, `ntrip_port`, `ntrip_user`, `ntrip_pass`, and `ntrip_mountpoint`.
+        *   [ ] Populate the new parameters with example or default values.
+    *   **Intermediate Test:**
+        *   [ ] Use `ros2 param dump` on a running node that loads the YAML file to verify that the new NTRIP parameters are correctly loaded into the ROS parameter server.
+    *   **Version Control:**
+        *   [ ] Commit the updated YAML file to the `feature/ntrip-params` branch.
+        *   [ ] Merge the `feature/ntrip-params` branch back into the `main` branch.
+
+*   #### **Task 9: Create the ROS 2 Launch File**
+    *   **Dependencies:** Task 8
+    *   **Context:** This task provides a single, parameterized entry point for running the entire system, including the driver node and the prerequisite `str2str` NTRIP client.
     *   **Subtasks:**
         *   [ ] Create and switch to a new feature branch: `git checkout -b feature/launch-file`.
         *   [ ] Create a `launch/unicore.launch.py` file.
-        *   [ ] Add a `Node` action to start the driver, loading the YAML file.
-        *   [ ] Add an `ExecuteProcess` action to run `str2str` with the NTRIP URL and `respawn=True`.
+        *   [ ] Add a `Node` action to start the driver, loading the `unicore_driver_params.yaml` file.
+        *   [ ] In the launch file, add logic to read the NTRIP parameters from the loaded configuration.
+        *   [ ] Construct the full NTRIP URL string for `str2str` in the format `ntrip://<user>:<pass>@<server>:<port>/<mountpoint>`.
+        *   [ ] Add an `ExecuteProcess` action to run the `str2str` command. The command will be configured to stream data from the constructed NTRIP URL to the driver's serial port. Set `respawn=True` to ensure the client restarts if it fails.
+        *   [ ] Add logic to the launch file to check for the existence of the `str2str` executable on the system and log a clear error message if it is not found.
         *   [ ] Install the `launch` and `config` directories in `CMakeLists.txt`.
     *   **Intermediate Test:**
+        *   [ ] Install `str2str` manually.
         *   [ ] Run `ros2 launch unicore_um982_driver unicore.launch.py`.
-        *   [ ] Verify both processes are running and that the GPS fix status eventually indicates an RTK fix.
+        *   [ ] Verify both the driver node and the `str2str` process are running.
+        *   [ ] Verify that the GPS fix status, observed via `ros2 topic echo /gps/fix`, eventually indicates an RTK fix.
     *   **Version Control:**
         *   [ ] Commit the launch file and associated changes to the `feature/launch-file` branch.
         *   [ ] Merge the `feature/launch-file` branch back into the `main` branch.
@@ -180,7 +198,7 @@ This document provides a detailed breakdown of the tasks required to build, test
 
 **Goal:** Implement health monitoring and prepare the package for distribution.
 
-*   #### **Task 9: Implement Diagnostics Publisher**
+*   #### **Task 10: Implement Diagnostics Publisher**
     *   **Dependencies:** Task 5
     *   **Context:** This task provides standardized health reporting for system monitoring tools.
     *   **Subtasks:**
@@ -194,15 +212,16 @@ This document provides a detailed breakdown of the tasks required to build, test
         *   [ ] Commit the diagnostics implementation to the `feature/diagnostics` branch.
         *   [ ] Merge the `feature/diagnostics` branch back into the `main` branch.
 
-*   #### **Task 10: Final Documentation and Code Cleanup**
-    *   **Dependencies:** Tasks 1-9
+*   #### **Task 11: Final Documentation and Code Cleanup**
+    *   **Dependencies:** Tasks 1-10
     *   **Context:** This final task involves polishing the code and writing a comprehensive `README.md`.
     *   **Subtasks:**
         *   [ ] Create and switch to a new feature branch: `git checkout -b feature/documentation`.
         *   [ ] Review all C++ code for clarity, comments, and style.
         *   [ ] Update the `README.md` file with full installation, configuration, and usage instructions.
+        *   [ ] **Add a "Prerequisites" section to the `README.md` that clearly states the requirement for RTKLIB's `str2str` utility. Provide step-by-step instructions for cloning the RTKLIB GitHub repository and building the utility from source.**
     *   **Intermediate Test:**
-        *   [ ] Have a colleague follow the `README.md` on a fresh machine to install, configure, and run the driver successfully.
+        *   [ ] Have a colleague follow the `README.md` on a fresh machine to install all prerequisites (including `str2str`), configure, and run the driver successfully.
     *   **Version Control:**
         *   [ ] Commit the final documentation and code cleanup to the `feature/documentation` branch.
         *   [ ] Merge the `feature/documentation` branch back into the `main` branch.

@@ -2,7 +2,7 @@
 
 | **Version** | **Date**       | **Author** | **Status** |
 | :---------- | :------------- | :--------- | :--------- |
-| 1.1         | July 28, 2025  | Gemini AI  | Final      |
+| 1.2         | July 30, 2025  | Gemini AI  | Final      |
 
 ### 1. Project Overview
 This document outlines the requirements for a ROS 2 driver for the Unicore UM982 dual-antenna RTK GPS receiver. The driver will serve as the primary interface between the UM982 hardware and a main Linux computer running ROS 2.
@@ -20,7 +20,7 @@ The driver must satisfy the following high-level requirements:
 | R4  | **RTK Correction Input**     | The system must facilitate feeding RTK correction data from a specified NTRIP server to the UM982's serial port.                            |
 | R5  | **Telemetry & Diagnostics**  | The driver must publish key performance indicators, such as fix quality and satellite count, using the standard ROS 2 diagnostics system.  |
 | R6  | **Hardware Configuration**   | The driver must automatically configure the UM982 receiver at startup to ensure it outputs the required data stream.                       |
-| R7  | **User Configurability**     | The driver must allow users to configure essential parameters, such as the serial port and baud rate, without modifying the source code. |
+| R7  | **User Configurability**     | The driver must allow users to configure essential parameters, such as the serial port, baud rate, and NTRIP configuration, without modifying the source code. |
 
 ### 3. Core Features
 The following features will be implemented to meet the core requirements:
@@ -32,29 +32,30 @@ The following features will be implemented to meet the core requirements:
 | F3  | **Automatic GPS Configuration** | On startup, the driver will send configuration commands to the UM982 via the serial port. It will command the receiver to output the `PVTSLN` message at **20Hz** and then send the `SAVECONFIG` command to make this setting persistent across power cycles. This configuration will be sent every time the driver starts. |
 | F4  | **RTK Integration via Launch** | An external `str2str` process will be used as the NTRIP client. A ROS 2 launch file will manage starting both the driver node and the `str2str` process. The launch file will be configured to **automatically restart** the `str2str` process if it terminates unexpectedly.                                                              |
 | F5  | **Diagnostic Publisher**     | The driver will publish a `diagnostic_msgs/DiagnosticArray` to the `/diagnostics` topic. The status will be named "RTK GPS" and will include the number of satellites. The diagnostic level will be mapped as follows: <br> - **OK:** RTK Fixed <br> - **WARN:** RTK Float, DGPS, or other unaugmented fixes <br> - **ERROR:** No Fix |
-| F6  | **Parameterization**         | The driver will expose the following as ROS 2 parameters, configurable via a YAML file: <br> - `port`: The serial port path (e.g., `/dev/ttyUSB0`). <br> - `baudrate`: The serial connection speed (e.g., `230400`).                                                                                                                            |
+| F6  | **Parameterization**         | The driver will expose the following as ROS 2 parameters, configurable via a YAML file: <br> - `port`: The serial port path (e.g., `/dev/ttyUSB0`). <br> - `baudrate`: The serial connection speed (e.g., `230400`). <br> - `ntrip_server`, `ntrip_port`, `ntrip_mountpoint`, `ntrip_user`, `ntrip_pass`: Parameters for configuring the `str2str` NTRIP client. |
 
 ### 4. Core Components
 The complete system will consist of the following components:
 
-1.  **UM982 ROS 2 Driver Node:** The primary software component, written in C++ or Python, that contains all the logic for parsing, publishing, and configuration.
-2.  **`str2str` Utility:** The external command-line tool from the RTKLIB suite, responsible for handling the NTRIP connection.
-3.  **Configuration File (`unicore_driver_params.yaml`):** A user-editable file to set the serial port and baud rate.
+1.  **UM982 ROS 2 Driver Node:** The primary software component, written in C++, that contains all the logic for parsing, publishing, and configuration.
+2.  **`str2str` Utility:** The external command-line tool from the RTKLIB suite, responsible for handling the NTRIP connection. This is a prerequisite for the package.
+3.  **Configuration File (`unicore_driver_params.yaml`):** A user-editable file to set the serial port, baud rate, and NTRIP client settings.
 4.  **Launch File (`unicore.launch.py`):** A ROS 2 launch file that provides a single entry point for running the entire system, including the driver node and the `str2str` utility.
+5.  **README.md:** Documentation providing installation instructions for all components, including how to build `str2str` from source if it is not available on the system.
 
 ### 5. Application & User Flow
 
 **A. One-Time Setup:**
 1.  The user installs the ROS 2 driver package.
-2.  The user installs the RTKLIB suite (`str2str` utility).
-3.  The user edits the `unicore_driver_params.yaml` file to match their hardware setup (correct serial port and baud rate).
+2.  The user installs the RTKLIB suite (`str2str` utility). If not available through a package manager, the user will follow instructions in the `README.md` to build it from the source on GitHub.
+3.  The user edits the `unicore_driver_params.yaml` file to match their hardware setup (correct serial port and baud rate) and NTRIP provider credentials.
 
 **B. System Execution:**
 1.  The user connects the UM982 receiver to the Linux computer via USB.
-2.  The user executes a single command: `ros2 launch unicore_driver unicore.launch.py`.
+2.  The user executes a single command: `ros2 launch unicore_um982_driver unicore.launch.py`.
 
 **C. Internal Process Flow:**
-1.  The ROS 2 launch system starts the **`str2str` process**. It connects to `ntrip://tyleralford:ntrip@205.172.52.26:10099/GTAC_MSM4` and begins forwarding correction data to the specified serial port.
+1.  The ROS 2 launch system starts the **`str2str` process**. It uses the parameters from the YAML file to connect to the specified NTRIP caster and begins forwarding correction data to the serial port.
 2.  The ROS 2 launch system starts the **driver node**.
 3.  The driver node reads the `port` and `baudrate` parameters.
 4.  The driver opens the serial port.
@@ -69,10 +70,10 @@ The complete system will consist of the following components:
 ### 6. Tech Stack
 *   **Framework:** ROS 2
 *   **Operating System:** Linux
-*   **Programming Language:** C++ (recommended for performance) or Python
+*   **Programming Language:** C++ (recommended for performance)
 *   **Libraries/Tools:**
-    *   `rclcpp` / `rclpy` (ROS 2 Client Library)
-    *   `libserial` (C++) / `pyserial` (Python) for serial communication
+    *   `rclcpp` (ROS 2 Client Library)
+    *   `libserial` (C++) for serial communication
     *   RTKLIB (`str2str` executable)
 
 ### 7. High-Level Implementation Plan
@@ -90,8 +91,9 @@ The complete system will consist of the following components:
     *   *Goal: Make the driver plug-and-play.*
 
 3.  **Phase 3: RTK Integration**
+    *   Define and handle parameters for `str2str` configuration (NTRIP server, port, etc.).
     *   Create the ROS 2 launch file.
-    *   Add the `str2str` process to the launch file, including the auto-restart configuration.
+    *   Add the `str2str` process to the launch file, configured via the new parameters, including the auto-restart configuration.
     *   Test the end-to-end flow of RTK corrections.
     *   *Goal: Enable high-accuracy RTK operation.*
 
@@ -102,6 +104,6 @@ The complete system will consist of the following components:
 
 5.  **Phase 5: Finalization**
     *   Conduct thorough integration testing on the target hardware.
-    *   Write a comprehensive `README.md` with installation, configuration, and usage instructions.
+    *   Write a comprehensive `README.md` with installation, configuration, and usage instructions, including how to install `str2str`.
     *   Code cleanup and review.
     *   *Goal: Deliver a polished and well-documented ROS 2 package.*
