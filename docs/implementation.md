@@ -129,7 +129,7 @@ This document provides a detailed breakdown of the tasks required to build, test
         *   [x] Hardware testing confirmed automatic configuration and PVTSLN streaming
     *   **Version Control:**
         *   [x] Commit the configuration work to the `feature/auto-config` branch.
-        *   [ ] Merge the `feature/auto-config` branch back into the `main` branch.
+        *   [x] Merge the `feature/auto-config` branch back into the `main` branch.
 
 *   #### **Task 7: Implement ROS 2 Parameterization** ✅ **COMPLETE**
     *   **Dependencies:** Task 6
@@ -154,7 +154,7 @@ This document provides a detailed breakdown of the tasks required to build, test
         *   [x] Confirmed graceful handling of empty configuration command arrays
     *   **Version Control:**
         *   [x] Commit the parameterization work to the `feature/parameterization` branch.
-        *   [ ] Merge the `feature/parameterization` branch back into the `main` branch.
+        *   [x] Merge the `feature/parameterization` branch back into the `main` branch.
 
 ### Phase 6: System Integration and RTK Handling
 
