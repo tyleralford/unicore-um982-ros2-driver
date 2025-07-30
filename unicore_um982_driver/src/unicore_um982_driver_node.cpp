@@ -22,6 +22,16 @@ public:
     {
         RCLCPP_INFO(this->get_logger(), "Unicore UM982 Driver Node started");
         
+        // Declare ROS 2 parameters with default values
+        this->declare_parameter("port", "/dev/ttyUSB0");
+        this->declare_parameter("baudrate", 230400);
+        
+        // Declare configuration commands parameter with default empty list
+        // This will be populated from the YAML file
+        this->declare_parameter("config_commands", std::vector<std::string>());
+        
+        RCLCPP_INFO(this->get_logger(), "Declared parameters: port, baudrate, and config_commands");
+        
         // Create ROS 2 publishers
         gps_fix_publisher_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", 10);
         gps_imu_publisher_ = this->create_publisher<sensor_msgs::msg::Imu>("gps/imu", 10);
@@ -48,9 +58,9 @@ private:
     void initializeSerial()
     {
         try {
-            // Hardcoded values for initial testing as per implementation plan
-            std::string port = "/dev/ttyUSB0";
-            uint32_t baudrate = 230400;
+            // Get parameters from ROS 2 parameter server
+            std::string port = this->get_parameter("port").as_string();
+            uint32_t baudrate = this->get_parameter("baudrate").as_int();
             
             RCLCPP_INFO(this->get_logger(), "Initializing serial port %s at %d baud", 
                         port.c_str(), baudrate);
@@ -249,27 +259,13 @@ private:
         try {
             RCLCPP_INFO(this->get_logger(), "Configuring UM982 receiver");
             
-            // Complete configuration sequence from UM982-CONFIG.txt
-            std::vector<std::string> config_commands = {
-                "CONFIG COM3 230400",           // Set COM3 to 230400 baud
-                "MODE ROVER SURVEY",            // Set receiver mode
-                "unmask GPS",                   // Enable GPS constellation
-                "unmask bds",                   // Enable BeiDou constellation  
-                "unmask GLO",                   // Enable GLONASS constellation
-                "unmask GAL",                   // Enable Galileo constellation
-                "unmask QZSS",                  // Enable QZSS constellation
-                "UNLOG",                        // Clear all existing logs
-                "CONFIG SMOOTH RTKHEIGHT 2",    // Configure RTK height smoothing
-                "CONFIG SMOOTH HEADING 2",      // Configure heading smoothing
-                "CONFIG SMOOTH PSRVEL ENABLE",  // Enable pseudorange velocity smoothing
-                "CONFIG RTK TIMEOUT 300",       // Set RTK timeout to 300 seconds
-                "CONFIG RTK RELIABILITY 4 2",  // Set RTK reliability parameters
-                "CONFIG HEADING FIXLENGTH",     // Enable fixed-length heading
-                "CONFIG HEADING LENGTH 43 1",   // Set heading baseline length (43cm with 1cm tolerance)
-                "CONFIG HEADING RELIABILITY 3", // Set heading reliability level
-                "PVTSLNA COM3 0.05",           // Enable PVTSLN output at 20Hz (0.05s interval)
-                "SAVECONFIG"                    // Save all configuration to non-volatile memory
-            };
+            // Get configuration commands from parameters
+            std::vector<std::string> config_commands = this->get_parameter("config_commands").as_string_array();
+            
+            if (config_commands.empty()) {
+                RCLCPP_WARN(this->get_logger(), "No configuration commands specified in parameters");
+                return;
+            }
             
             RCLCPP_INFO(this->get_logger(), "Sending %zu configuration commands to UM982", config_commands.size());
             
@@ -292,8 +288,6 @@ private:
             }
             
             RCLCPP_INFO(this->get_logger(), "UM982 receiver configuration complete");
-            RCLCPP_INFO(this->get_logger(), "Configuration includes: Multi-constellation GNSS, RTK settings, heading configuration, and 20Hz PVTSLN output");
-            
         } catch (const std::exception& e) {
             RCLCPP_ERROR(this->get_logger(), "Failed to configure receiver: %s", e.what());
         }
