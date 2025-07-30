@@ -168,14 +168,11 @@ def generate_launch_description():
     
     # Construct serial output dynamically (strip /dev/ prefix for str2str)
     # str2str expects device name like 'ttyUSB0', not '/dev/ttyUSB0'
-    device_name_substitution = PythonExpression([
-        "'", LaunchConfiguration('gps_port'), "'.replace('/dev/', '') if '", 
-        LaunchConfiguration('gps_port'), "'.startswith('/dev/') else '", 
-        LaunchConfiguration('gps_port'), "'"
-    ])
-    
+    # Combine device name processing and serial output construction in single expression
     serial_output = PythonExpression([
-        "'serial://' + (", device_name_substitution, ") + ':' + '", 
+        "'serial://' + ('", LaunchConfiguration('gps_port'), "'.replace('/dev/', '') if '", 
+        LaunchConfiguration('gps_port'), "'.startswith('/dev/') else '", 
+        LaunchConfiguration('gps_port'), "') + ':' + '", 
         LaunchConfiguration('gps_baudrate'), "' + ':8:n:1:off'"
     ])
     
