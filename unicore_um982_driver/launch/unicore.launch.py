@@ -28,7 +28,7 @@ import os
 import shutil
 import yaml
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo, OpaqueFunction, LogDebug
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, TextSubstitution, PythonExpression
 from launch_ros.actions import Node
@@ -46,7 +46,7 @@ def check_str2str_and_get_ntrip_command(context):
                                   "See README.md for installation instructions."))
         return actions
     
-    actions.append(LogInfo(msg=f"Found str2str executable at: {str2str_path}"))
+    # actions.append(LogDebug(msg=f"Found str2str executable at: {str2str_path}"))
     
     # Load YAML configuration to get NTRIP parameters
     config_file = context.launch_configurations.get('config_file', '')
@@ -72,7 +72,7 @@ def check_str2str_and_get_ntrip_command(context):
             serial_out = f"serial://{device_name}:{baudrate}:8:n:1:off"
             
             actions.append(LogInfo(msg=f"NTRIP URL: {ntrip_url}"))
-            actions.append(LogInfo(msg=f"Serial output: {serial_out}"))
+            # actions.append(LogInfo(msg=f"Serial output: {serial_out}"))
             
         except Exception as e:
             actions.append(LogInfo(msg=f"Error reading config file {config_file}: {e}"))
@@ -198,6 +198,14 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('enable_ntrip'))
     )
     
+    # Log the final str2str command that will be executed
+    str2str_command_info = LogInfo(
+        msg=[
+            "str2str command: str2str -in ", ntrip_url, " -out ", serial_output, " -s 5000 -r 1000"
+        ],
+        condition=IfCondition(LaunchConfiguration('enable_ntrip'))
+    )
+    
     return LaunchDescription([
         config_file_arg,
         enable_ntrip_arg,
@@ -210,6 +218,7 @@ def generate_launch_description():
         gps_baudrate_arg,
         check_ntrip_setup,
         ntrip_info,
+        str2str_command_info,
         driver_node,
         ntrip_client
     ])
