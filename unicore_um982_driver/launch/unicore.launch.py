@@ -30,7 +30,7 @@ import yaml
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo, OpaqueFunction
 from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration, TextSubstitution
+from launch.substitutions import LaunchConfiguration, TextSubstitution, PythonExpression
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 
@@ -155,46 +155,29 @@ def generate_launch_description():
         emulate_tty=True
     )
     
-    # Construct NTRIP URL dynamically
-    ntrip_url = [
-        'ntrip://',
-        LaunchConfiguration('ntrip_user'),
-        ':',
-        LaunchConfiguration('ntrip_pass'),
-        '@',
-        LaunchConfiguration('ntrip_server'),
-        ':',
-        LaunchConfiguration('ntrip_port'),
-        '/',
-        LaunchConfiguration('ntrip_mountpoint')
-    ]
+    # Construct NTRIP URL dynamically using proper substitutions
+    from launch.substitutions import PythonExpression
+    
+    ntrip_url = PythonExpression([
+        "'ntrip://' + '", LaunchConfiguration('ntrip_user'), "' + ':' + '", 
+        LaunchConfiguration('ntrip_pass'), "' + '@' + '", 
+        LaunchConfiguration('ntrip_server'), "' + ':' + '", 
+        LaunchConfiguration('ntrip_port'), "' + '/' + '", 
+        LaunchConfiguration('ntrip_mountpoint'), "'"
+    ])
     
     # Construct serial output dynamically (strip /dev/ prefix for str2str)
     # str2str expects device name like 'ttyUSB0', not '/dev/ttyUSB0'
-    def strip_dev_prefix(device_path):
-        """Remove /dev/ prefix from device path for str2str compatibility."""
-        if device_path.startswith('/dev/'):
-            return device_path[5:]  # Remove '/dev/' prefix
-        return device_path
-    
-    # We need to handle the device path stripping at runtime
-    # Since LaunchConfiguration can't be processed at definition time,
-    # we'll create a custom substitution
-    from launch.substitutions import PythonExpression
-    
     device_name_substitution = PythonExpression([
         "'", LaunchConfiguration('gps_port'), "'.replace('/dev/', '') if '", 
         LaunchConfiguration('gps_port'), "'.startswith('/dev/') else '", 
         LaunchConfiguration('gps_port'), "'"
     ])
     
-    serial_output = [
-        'serial://',
-        device_name_substitution,
-        ':',
-        LaunchConfiguration('gps_baudrate'),
-        ':8:n:1:off'
-    ]
+    serial_output = PythonExpression([
+        "'serial://' + (", device_name_substitution, ") + ':' + '", 
+        LaunchConfiguration('gps_baudrate'), "' + ':8:n:1:off'"
+    ])
     
     # Create the NTRIP client process
     ntrip_client = ExecuteProcess(
