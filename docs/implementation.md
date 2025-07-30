@@ -93,11 +93,11 @@ This document provides a detailed breakdown of the tasks required to build, test
         *   [x] Add `sensor_msgs` and `geometry_msgs` as dependencies.
         *   [x] Declare publishers for `sensor_msgs::msg::NavSatFix` (`gps/fix`) and `sensor_msgs::msg::Imu` (`gps/imu`).
         *   [x] Implement methods to populate and publish these messages from the parsed `PVTSLNData` struct. This includes the heading-to-quaternion conversion.
-        *   [ ] **Populate the `NavSatFix.position_covariance` field by squaring the standard deviation values from `PVTSLNData`. Set `position_covariance_type` to `DIAGONAL_KNOWN`.**
+        *   [x] **Populate the `NavSatFix.position_covariance` field by squaring the standard deviation values from `PVTSLNData`. Set `position_covariance_type` to `DIAGONAL_KNOWN`.**
     *   **Intermediate Test:**
         *   [x] Build and run the node.
         *   [x] Use `ros2 topic echo` on `/gps/fix` and `/gps/imu` to verify the messages are published correctly and at the expected rate.
-        *   [ ] **Inspect the `position_covariance` field in the `/gps/fix` topic echo to ensure the diagonal elements are non-zero and plausible.**
+        *   [x] **Inspect the `position_covariance` field in the `/gps/fix` topic echo to ensure the diagonal elements are non-zero and plausible.**
     *   **Version Control:**
         *   [x] Commit the publisher implementation to the `feature/publishing` branch.
         *   [x] Merge the `feature/publishing` branch back into the `main` branch.
