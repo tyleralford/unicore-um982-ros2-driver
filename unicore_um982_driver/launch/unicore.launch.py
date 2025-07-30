@@ -142,6 +142,13 @@ def generate_launch_description():
         description='GPS serial port baudrate'
     )
     
+    # Add log level argument for debugging
+    log_level_arg = DeclareLaunchArgument(
+        'log_level',
+        default_value='INFO',
+        description='Log level for the GPS driver node (DEBUG, INFO, WARN, ERROR, FATAL)'
+    )
+    
     # Check for str2str executable and NTRIP configuration
     check_ntrip_setup = OpaqueFunction(function=check_str2str_and_get_ntrip_command)
     
@@ -188,7 +195,8 @@ def generate_launch_description():
         name='unicore_um982_driver',
         parameters=[LaunchConfiguration('config_file')],
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')]
     )
     
     # Construct NTRIP URL dynamically using proper substitutions
@@ -252,6 +260,7 @@ def generate_launch_description():
         ntrip_mountpoint_arg,
         gps_port_arg,
         gps_baudrate_arg,
+        log_level_arg,
         load_yaml_params,  # Load YAML params first to override launch args
         check_ntrip_setup,
         ntrip_info,
