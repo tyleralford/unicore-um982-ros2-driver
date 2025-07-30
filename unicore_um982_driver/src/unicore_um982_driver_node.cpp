@@ -350,7 +350,6 @@ private:
         
         // Add satellite information
         stat.add("Satellite count", std::to_string(last_satellite_count_));
-        stat.add("Fix status", last_fix_status_);
         stat.add("Data age (s)", std::to_string(time_since_last_data));
     }
 
