@@ -30,7 +30,14 @@ public:
         // This will be populated from the YAML file
         this->declare_parameter("config_commands", std::vector<std::string>());
         
-        RCLCPP_INFO(this->get_logger(), "Declared parameters: port, baudrate, and config_commands");
+        // Declare NTRIP parameters for the external str2str client
+        this->declare_parameter("ntrip_server", "rtk2go.com");
+        this->declare_parameter("ntrip_port", 2101);
+        this->declare_parameter("ntrip_mountpoint", "FIXED");
+        this->declare_parameter("ntrip_user", "user");
+        this->declare_parameter("ntrip_pass", "password");
+        
+        RCLCPP_INFO(this->get_logger(), "Declared parameters: port, baudrate, config_commands, and NTRIP client parameters");
         
         // Create ROS 2 publishers
         gps_fix_publisher_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", 10);
