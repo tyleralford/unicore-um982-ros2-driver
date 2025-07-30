@@ -202,8 +202,8 @@ def generate_launch_description():
             'str2str',
             '-in', ntrip_url,
             '-out', serial_output,
-            '-t', '5',  # 5 second timeout
-            '-s', '1'   # 1 second reconnection interval
+            '-s', '5000',   # 5 second timeout (in milliseconds)
+            '-r', '1000'    # 1 second reconnection interval (in milliseconds)
         ],
         output='screen',
         condition=IfCondition(LaunchConfiguration('enable_ntrip')),
