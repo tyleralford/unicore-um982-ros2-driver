@@ -76,7 +76,7 @@ The driver requires the `str2str` utility from RTKLIB for NTRIP RTK corrections.
 
 2. **Clone this repository:**
    ```bash
-   git clone <repository-url> um982-driver
+   git clone https://github.com/tyleralford/unicore-um982-ros2-driver.git um982-driver
    ```
 
 3. **Install dependencies:**
