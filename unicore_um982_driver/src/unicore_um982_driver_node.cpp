@@ -167,13 +167,21 @@ private:
         
         msg.status.service = sensor_msgs::msg::NavSatStatus::SERVICE_GPS;
         
-        // Set covariance based on standard deviations (if available)
+        // Set covariance based on standard deviations from PVTSLN message
         // Position covariance is a 3x3 matrix (ENU - East, North, Up)
-        // For now, use default values since sigma values may not always be valid
-        double position_covariance = 1.0; // Default 1m standard deviation
-        msg.position_covariance[0] = position_covariance * position_covariance; // East
-        msg.position_covariance[4] = position_covariance * position_covariance; // North  
-        msg.position_covariance[8] = position_covariance * position_covariance; // Up
+        // Convert standard deviations to variances (square them)
+        double east_variance = data.sigma_longitude * data.sigma_longitude;
+        double north_variance = data.sigma_latitude * data.sigma_latitude;
+        double up_variance = data.sigma_altitude * data.sigma_altitude;
+        
+        // Use default values if sigma values are invalid or zero
+        if (east_variance <= 0.0) east_variance = 1.0;
+        if (north_variance <= 0.0) north_variance = 1.0;
+        if (up_variance <= 0.0) up_variance = 1.0;
+        
+        msg.position_covariance[0] = east_variance;  // East
+        msg.position_covariance[4] = north_variance; // North  
+        msg.position_covariance[8] = up_variance;    // Up
         msg.position_covariance_type = sensor_msgs::msg::NavSatFix::COVARIANCE_TYPE_DIAGONAL_KNOWN;
         
         gps_fix_publisher_->publish(msg);
