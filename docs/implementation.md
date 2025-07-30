@@ -70,7 +70,7 @@ This document provides a detailed breakdown of the tasks required to build, test
     *   **Subtasks:**
         *   [x] Create a feature branch `feature/parser` from `main`.
         *   [x] Create a `include/unicore_um982_driver/pvtsln_data.hpp` header file.
-        *   [x] Define a C++ struct `PVTSLNData` with fields for all PVTSLN message elements (latitude, longitude, altitude, heading, status, etc.).
+        *   [ ] Define a C++ struct `PVTSLNData` with fields for all PVTSLN message elements (latitude, longitude, altitude, heading, status, **north_std_dev, east_std_dev, up_std_dev**, etc.).
         *   [x] Create a `src/pvtsln_parser.cpp` file implementing a function `bool parsePVTSLN(const std::string& line, PVTSLNData& data)`.
         *   [x] The parser should handle comma-separated fields, validate the message format, and populate the struct.
         *   [x] Add parser source file to `CMakeLists.txt`.
@@ -93,9 +93,11 @@ This document provides a detailed breakdown of the tasks required to build, test
         *   [x] Add `sensor_msgs` and `geometry_msgs` as dependencies.
         *   [x] Declare publishers for `sensor_msgs::msg::NavSatFix` (`gps/fix`) and `sensor_msgs::msg::Imu` (`gps/imu`).
         *   [x] Implement methods to populate and publish these messages from the parsed `PVTSLNData` struct. This includes the heading-to-quaternion conversion.
+        *   [ ] **Populate the `NavSatFix.position_covariance` field by squaring the standard deviation values from `PVTSLNData`. Set `position_covariance_type` to `DIAGONAL_KNOWN`.**
     *   **Intermediate Test:**
         *   [x] Build and run the node.
         *   [x] Use `ros2 topic echo` on `/gps/fix` and `/gps/imu` to verify the messages are published correctly and at the expected rate.
+        *   [ ] **Inspect the `position_covariance` field in the `/gps/fix` topic echo to ensure the diagonal elements are non-zero and plausible.**
     *   **Version Control:**
         *   [x] Commit the publisher implementation to the `feature/publishing` branch.
         *   [x] Merge the `feature/publishing` branch back into the `main` branch.

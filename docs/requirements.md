@@ -2,7 +2,7 @@
 
 | **Version** | **Date**       | **Author** | **Status** |
 | :---------- | :------------- | :--------- | :--------- |
-| 1.0         | July 28, 2025  | Gemini AI  | Final      |
+| 1.1         | July 28, 2025  | Gemini AI  | Final      |
 
 ### 1. Project Overview
 This document outlines the requirements for a ROS 2 driver for the Unicore UM982 dual-antenna RTK GPS receiver. The driver will serve as the primary interface between the UM982 hardware and a main Linux computer running ROS 2.
@@ -15,7 +15,7 @@ The driver must satisfy the following high-level requirements:
 | ID  | Requirement                  | Description                                                                                                                              |
 | :-- | :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
 | R1  | **Data Parsing**             | The driver must parse the Unicore `PVTSLN` ASCII message received from the UM982 over a serial connection.                                  |
-| R2  | **Position Output**          | The driver must publish the receiver's position (Latitude, Longitude, Altitude) using a standard ROS 2 message type.                       |
+| R2  | **Position Output**          | The driver must publish the receiver's position (Latitude, Longitude, Altitude) and position uncertainty using a standard ROS 2 message type. |
 | R3  | **Heading & IMU Output**     | The driver must publish the receiver's heading, velocity, and acceleration data using a standard ROS 2 message type.                       |
 | R4  | **RTK Correction Input**     | The system must facilitate feeding RTK correction data from a specified NTRIP server to the UM982's serial port.                            |
 | R5  | **Telemetry & Diagnostics**  | The driver must publish key performance indicators, such as fix quality and satellite count, using the standard ROS 2 diagnostics system.  |
@@ -27,7 +27,7 @@ The following features will be implemented to meet the core requirements:
 
 | ID  | Feature                      | Details                                                                                                                                                                                                                                                                                                                         |
 | :-- | :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| F1  | **NavSatFix Publisher**      | Publishes a `sensor_msgs/NavSatFix` message on the `gps/fix` topic. The message's `frame_id` will be `gps_link`.                                                                                                                                                                                                                    |
+| F1  | **NavSatFix Publisher**      | Publishes a `sensor_msgs/NavSatFix` message on the `gps/fix` topic. The message's `frame_id` will be `gps_link`. The `position_covariance` field will be populated using the standard deviation values from the `PVTSLN` message. The `position_covariance_type` will be set to `COVARIANCE_TYPE_DIAGONAL_KNOWN`. |
 | F2  | **IMU Publisher**            | Publishes a `sensor_msgs/Imu` message on the `gps/imu` topic. The message's `frame_id` will be `gps_link`. The orientation quaternion will be derived from the `PVTSLN` heading, assuming zero pitch and roll. Velocity and acceleration fields will be populated directly from the `PVTSLN` message.                             |
 | F3  | **Automatic GPS Configuration** | On startup, the driver will send configuration commands to the UM982 via the serial port. It will command the receiver to output the `PVTSLN` message at **20Hz** and then send the `SAVECONFIG` command to make this setting persistent across power cycles. This configuration will be sent every time the driver starts. |
 | F4  | **RTK Integration via Launch** | An external `str2str` process will be used as the NTRIP client. A ROS 2 launch file will manage starting both the driver node and the `str2str` process. The launch file will be configured to **automatically restart** the `str2str` process if it terminates unexpectedly.                                                              |
