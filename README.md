@@ -65,10 +65,6 @@ The driver requires the `str2str` utility from RTKLIB for NTRIP RTK corrections.
    ```
    You should see the str2str help message.
 
-**Alternative: Using package manager (if available):**
-```bash
-sudo apt-get install rtklib-bin  # May not be available on all distributions
-```
 
 ## Installation
 
@@ -116,7 +112,7 @@ The driver uses a YAML configuration file located at `config/unicore_driver_para
 - `ntrip_mountpoint`: NTRIP mountpoint (default: `FIXED`)
 
 ### UM982 Configuration Commands
-The driver automatically configures the UM982 with an 18-command sequence optimizing it for RTK positioning, including:
+The driver automatically configures the UM982 with a command sequence optimizing it for RTK positioning, including:
 - Multi-constellation support (GPS, GLONASS, Galileo, BeiDou, QZSS)
 - RTK settings with 300-second timeout
 - Smoothing filters for improved accuracy
@@ -239,35 +235,6 @@ ros2 topic hz /gps/fix  # Check data rate
 ros2 launch unicore_um982_driver unicore.launch.py --ros-args --log-level DEBUG
 ```
 
-## Performance
-
-- **Update Rate**: 20Hz GPS position and heading data
-- **Accuracy**: 
-  - SINGLE: 3-5 meters
-  - RTK_FLOAT: 10-50 centimeters  
-  - RTK_FIXED: 1-5 centimeters
-- **Cold Start**: ~30 seconds to first fix
-- **RTK Convergence**: 30 seconds to 5 minutes depending on conditions
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For issues and questions:
-1. Check the troubleshooting section above
-2. Review diagnostic messages: `ros2 topic echo /diagnostics`
-3. Open an issue on GitHub with:
-   - GPS receiver model and firmware version
-   - ROS 2 distribution and OS version
-   - Complete log output
-   - Hardware setup description

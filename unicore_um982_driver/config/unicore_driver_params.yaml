@@ -24,12 +24,12 @@ unicore_um982_driver:
       - "CONFIG SMOOTH HEADING 2"      # Configure heading smoothing
       - "CONFIG SMOOTH PSRVEL ENABLE"  # Enable pseudorange velocity smoothing
       - "CONFIG RTK TIMEOUT 300"       # Set RTK timeout to 300 seconds
-      - "CONFIG RTK RELIABILITY 4 2"  # Set RTK reliability parameters
+      - "CONFIG RTK RELIABILITY 4 2"   # Set RTK reliability parameters
       - "CONFIG HEADING FIXLENGTH"     # Enable fixed-length heading
       - "CONFIG HEADING LENGTH 43 1"   # Set heading baseline length (43cm with 1cm tolerance)
       - "CONFIG HEADING RELIABILITY 3" # Set heading reliability level
-      - "PVTSLNA COM3 0.05"           # Enable PVTSLN output at 20Hz (0.05s interval)
-      - "SAVECONFIG"                  # Save all configuration to non-volatile memory
+      - "PVTSLNA COM3 0.05"            # Enable PVTSLN output at 20Hz (0.05s interval)
+      - "SAVECONFIG"                   # Save all configuration to non-volatile memory
     
     # NTRIP Client Configuration
     # These parameters configure the external str2str NTRIP client

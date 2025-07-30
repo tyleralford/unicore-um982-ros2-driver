@@ -17,7 +17,7 @@
  * - /gps/imu (sensor_msgs/Imu): Heading and orientation data
  * - /diagnostics (diagnostic_msgs/DiagnosticArray): System health status
  * 
- * @author ROS 2 Development Team
+ * @author Sonnet4
  * @date 2025
  */
 
@@ -118,7 +118,7 @@ private:
             std::string port = this->get_parameter("port").as_string();
             uint32_t baudrate = this->get_parameter("baudrate").as_int();
             
-            RCLCPP_INFO(this->get_logger(), "Initializing serial port %s at %d baud", 
+            RCLCPP_DEBUG(this->get_logger(), "Initializing serial port %s at %d baud", 
                         port.c_str(), baudrate);
             
             // Create serial port configuration
@@ -135,7 +135,7 @@ private:
             serial_driver_->port()->open();
             
             if (serial_driver_->port()->is_open()) {
-                RCLCPP_INFO(this->get_logger(), "Serial port opened successfully");
+                RCLCPP_DEBUG(this->get_logger(), "Serial port opened successfully");
                 
                 // Configure the receiver with automatic settings
                 configureReceiver();
@@ -188,12 +188,12 @@ private:
             
             // Check if this is a PVTSLN message
             if (line.find("PVTSLN") != std::string::npos) {
-                RCLCPP_INFO(this->get_logger(), "Raw PVTSLN: %s", line.c_str());
+                RCLCPP_DEBUG(this->get_logger(), "Raw PVTSLN: %s", line.c_str());
                 
                 // Parse the PVTSLN message
                 unicore_um982_driver::PVTSLNData parsed_data;
                 if (unicore_um982_driver::parsePVTSLN(line, parsed_data)) {
-                    RCLCPP_INFO(this->get_logger(), 
+                    RCLCPP_DEBUG(this->get_logger(), 
                         "Parsed PVTSLN - Status: %s, Lat: %.8f, Lon: %.8f, Alt: %.3f, Heading: %.2f, Sats: %d", 
                         parsed_data.position_status.c_str(),
                         parsed_data.latitude, 
@@ -278,7 +278,7 @@ private:
         
         // Set orientation covariance
         // For heading-only data, we have uncertainty only around Z-axis
-        double heading_variance = 0.1; // ~5.7 degrees standard deviation
+        double heading_variance = 0.05; // ~5.7 degrees standard deviation
         msg.orientation_covariance[8] = heading_variance; // Z-axis rotation variance
         msg.orientation_covariance[0] = -1; // Mark X and Y as unknown
         msg.orientation_covariance[4] = -1;
@@ -318,7 +318,7 @@ private:
         }
         
         try {
-            RCLCPP_INFO(this->get_logger(), "Configuring UM982 receiver");
+            RCLCPP_DEBUG(this->get_logger(), "Configuring UM982 receiver");
             
             // Get configuration commands from parameters
             std::vector<std::string> config_commands = this->get_parameter("config_commands").as_string_array();
@@ -328,7 +328,7 @@ private:
                 return;
             }
             
-            RCLCPP_INFO(this->get_logger(), "Sending %zu configuration commands to UM982", config_commands.size());
+            RCLCPP_DEBUG(this->get_logger(), "Sending %zu configuration commands to UM982", config_commands.size());
             
             // Send each configuration command with proper timing
             for (size_t i = 0; i < config_commands.size(); ++i) {

@@ -20,7 +20,7 @@ Launch Arguments:
 - ntrip_server, ntrip_port, ntrip_user, ntrip_pass, ntrip_mountpoint: NTRIP settings
 - gps_port, gps_baudrate: GPS serial connection settings
 
-@author ROS 2 Development Team  
+@author Sonnet4
 @date 2025
 """
 
@@ -194,7 +194,7 @@ def generate_launch_description():
     
     # Log NTRIP configuration
     ntrip_info = LogInfo(
-        msg="Starting NTRIP client with str2str. RTK corrections will be streamed to the GPS receiver.",
+        msg="Starting NTRIP client with str2str.",
         condition=IfCondition(LaunchConfiguration('enable_ntrip'))
     )
     
