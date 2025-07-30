@@ -1,3 +1,4 @@
+Config Commands:
 CONFIG COM3 230400
 MODE ROVER SURVEY
 unmask GPS

@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <thread>
+#include <chrono>
 
 using namespace drivers::serial_driver;
 using namespace drivers::common;
@@ -68,6 +70,9 @@ private:
             
             if (serial_driver_->port()->is_open()) {
                 RCLCPP_INFO(this->get_logger(), "Serial port opened successfully");
+                
+                // Configure the receiver with automatic settings
+                configureReceiver();
             } else {
                 RCLCPP_ERROR(this->get_logger(), "Failed to open serial port");
             }
@@ -232,6 +237,66 @@ private:
         quat.z = std::sin(heading_rad / 2.0);
         quat.w = std::cos(heading_rad / 2.0);
         return quat;
+    }
+    
+    void configureReceiver()
+    {
+        if (!serial_driver_ || !serial_driver_->port()->is_open()) {
+            RCLCPP_ERROR(this->get_logger(), "Cannot configure receiver: serial port not open");
+            return;
+        }
+        
+        try {
+            RCLCPP_INFO(this->get_logger(), "Configuring UM982 receiver");
+            
+            // Complete configuration sequence from UM982-CONFIG.txt
+            std::vector<std::string> config_commands = {
+                "CONFIG COM3 230400",           // Set COM3 to 230400 baud
+                "MODE ROVER SURVEY",            // Set receiver mode
+                "unmask GPS",                   // Enable GPS constellation
+                "unmask bds",                   // Enable BeiDou constellation  
+                "unmask GLO",                   // Enable GLONASS constellation
+                "unmask GAL",                   // Enable Galileo constellation
+                "unmask QZSS",                  // Enable QZSS constellation
+                "UNLOG",                        // Clear all existing logs
+                "CONFIG SMOOTH RTKHEIGHT 2",    // Configure RTK height smoothing
+                "CONFIG SMOOTH HEADING 2",      // Configure heading smoothing
+                "CONFIG SMOOTH PSRVEL ENABLE",  // Enable pseudorange velocity smoothing
+                "CONFIG RTK TIMEOUT 300",       // Set RTK timeout to 300 seconds
+                "CONFIG RTK RELIABILITY 4 2",  // Set RTK reliability parameters
+                "CONFIG HEADING FIXLENGTH",     // Enable fixed-length heading
+                "CONFIG HEADING LENGTH 43 1",   // Set heading baseline length (43cm with 1cm tolerance)
+                "CONFIG HEADING RELIABILITY 3", // Set heading reliability level
+                "PVTSLNA COM3 0.05",           // Enable PVTSLN output at 20Hz (0.05s interval)
+                "SAVECONFIG"                    // Save all configuration to non-volatile memory
+            };
+            
+            RCLCPP_INFO(this->get_logger(), "Sending %zu configuration commands to UM982", config_commands.size());
+            
+            // Send each configuration command with proper timing
+            for (size_t i = 0; i < config_commands.size(); ++i) {
+                const auto& command = config_commands[i];
+                std::string full_command = command + "\r\n";
+                std::vector<uint8_t> command_data(full_command.begin(), full_command.end());
+                
+                serial_driver_->port()->send(command_data);
+                RCLCPP_INFO(this->get_logger(), "Sent command %zu/%zu: %s", i+1, config_commands.size(), command.c_str());
+                
+                // Wait between commands to allow processing
+                if (command == "SAVECONFIG") {
+                    // Give extra time for save operation
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                } else {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
+            }
+            
+            RCLCPP_INFO(this->get_logger(), "UM982 receiver configuration complete");
+            RCLCPP_INFO(this->get_logger(), "Configuration includes: Multi-constellation GNSS, RTK settings, heading configuration, and 20Hz PVTSLN output");
+            
+        } catch (const std::exception& e) {
+            RCLCPP_ERROR(this->get_logger(), "Failed to configure receiver: %s", e.what());
+        }
     }
 
     // Member variables
