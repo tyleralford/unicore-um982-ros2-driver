@@ -28,7 +28,7 @@ import os
 import shutil
 import yaml
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo, OpaqueFunction, LogDebug
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, TextSubstitution, PythonExpression
 from launch_ros.actions import Node
@@ -145,7 +145,43 @@ def generate_launch_description():
     # Check for str2str executable and NTRIP configuration
     check_ntrip_setup = OpaqueFunction(function=check_str2str_and_get_ntrip_command)
     
-    # Create the driver node
+    # Create the driver node with parameter overrides
+    # Load YAML config to override launch arguments with actual config values
+    def load_params_and_override_args(context):
+        """Load YAML parameters and update launch configurations."""
+        config_file = context.launch_configurations.get('config_file', '')
+        if os.path.exists(config_file):
+            try:
+                with open(config_file, 'r') as f:
+                    config = yaml.safe_load(f)
+                
+                # Extract parameters from YAML
+                params = config.get('unicore_um982_driver', {}).get('ros__parameters', {})
+                
+                # Override launch configurations with YAML values if they exist
+                if 'ntrip_server' in params:
+                    context.launch_configurations['ntrip_server'] = str(params['ntrip_server'])
+                if 'ntrip_port' in params:
+                    context.launch_configurations['ntrip_port'] = str(params['ntrip_port'])
+                if 'ntrip_user' in params:
+                    context.launch_configurations['ntrip_user'] = str(params['ntrip_user'])
+                if 'ntrip_pass' in params:
+                    context.launch_configurations['ntrip_pass'] = str(params['ntrip_pass'])
+                if 'ntrip_mountpoint' in params:
+                    context.launch_configurations['ntrip_mountpoint'] = str(params['ntrip_mountpoint'])
+                if 'port' in params:
+                    context.launch_configurations['gps_port'] = str(params['port'])
+                if 'baudrate' in params:
+                    context.launch_configurations['gps_baudrate'] = str(params['baudrate'])
+                    
+            except Exception as e:
+                print(f"Error loading config file {config_file}: {e}")
+        
+        return []
+    
+    # Load YAML params and override launch arguments
+    load_yaml_params = OpaqueFunction(function=load_params_and_override_args)
+    
     driver_node = Node(
         package='unicore_um982_driver',
         executable='unicore_um982_driver_node',
@@ -216,6 +252,7 @@ def generate_launch_description():
         ntrip_mountpoint_arg,
         gps_port_arg,
         gps_baudrate_arg,
+        load_yaml_params,  # Load YAML params first to override launch args
         check_ntrip_setup,
         ntrip_info,
         str2str_command_info,
