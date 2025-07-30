@@ -14,3 +14,4 @@ VERY IMPORTANT:
 - Each task should list dependent task ids
 - Ask about any missing information from the PRD
 - Do not include code in the plan
+- Use gh and git for version control

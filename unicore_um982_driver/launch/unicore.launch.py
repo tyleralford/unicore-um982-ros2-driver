@@ -67,7 +67,9 @@ def check_str2str_and_get_ntrip_command(context):
             
             # Construct NTRIP URL
             ntrip_url = f"ntrip://{ntrip_user}:{ntrip_pass}@{ntrip_server}:{ntrip_port}/{ntrip_mountpoint}"
-            serial_out = f"serial://{port}:{baudrate}:8:n:1:off"
+            # Extract device name without /dev/ prefix for str2str
+            device_name = port.replace('/dev/', '') if port.startswith('/dev/') else port
+            serial_out = f"serial://{device_name}:{baudrate}:8:n:1:off"
             
             actions.append(LogInfo(msg=f"NTRIP URL: {ntrip_url}"))
             actions.append(LogInfo(msg=f"Serial output: {serial_out}"))
@@ -167,10 +169,28 @@ def generate_launch_description():
         LaunchConfiguration('ntrip_mountpoint')
     ]
     
-    # Construct serial output dynamically
+    # Construct serial output dynamically (strip /dev/ prefix for str2str)
+    # str2str expects device name like 'ttyUSB0', not '/dev/ttyUSB0'
+    def strip_dev_prefix(device_path):
+        """Remove /dev/ prefix from device path for str2str compatibility."""
+        if device_path.startswith('/dev/'):
+            return device_path[5:]  # Remove '/dev/' prefix
+        return device_path
+    
+    # We need to handle the device path stripping at runtime
+    # Since LaunchConfiguration can't be processed at definition time,
+    # we'll create a custom substitution
+    from launch.substitutions import PythonExpression
+    
+    device_name_substitution = PythonExpression([
+        "'", LaunchConfiguration('gps_port'), "'.replace('/dev/', '') if '", 
+        LaunchConfiguration('gps_port'), "'.startswith('/dev/') else '", 
+        LaunchConfiguration('gps_port'), "'"
+    ])
+    
     serial_output = [
         'serial://',
-        LaunchConfiguration('gps_port'),
+        device_name_substitution,
         ':',
         LaunchConfiguration('gps_baudrate'),
         ':8:n:1:off'

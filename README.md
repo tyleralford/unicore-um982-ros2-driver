@@ -40,6 +40,11 @@ This driver provides high-frequency, high-accuracy position and heading data to 
 
 The driver requires the `str2str` utility from RTKLIB for NTRIP RTK corrections. Follow these steps to install it:
 
+1. **Install dependencies:**
+   ```bash
+   sudo apt update && sudo apt install build-essential
+   ```
+
 1. **Clone the RTKLIB repository:**
    ```bash
    cd ~
@@ -49,14 +54,13 @@ The driver requires the `str2str` utility from RTKLIB for NTRIP RTK corrections.
 
 2. **Build the CUI applications:**
    ```bash
-   cd app/consapp
+   cd app/str2str/gcc
    make
    ```
 
 3. **Install str2str to system PATH:**
    ```bash
-   sudo cp str2str/gcc/str2str /usr/local/bin/
-   sudo chmod +x /usr/local/bin/str2str
+   sudo cp str2str /usr/local/bin/
    ```
 
 4. **Verify installation:**
