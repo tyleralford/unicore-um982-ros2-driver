@@ -1,3 +1,26 @@
+/**
+ * @file unicore_um982_driver_node.cpp
+ * @brief ROS 2 driver node for Unicore UM982 dual-antenna RTK GPS receiver
+ * 
+ * This driver provides high-frequency GPS positioning and heading data by parsing
+ * Unicore PVTSLN messages and publishing standard ROS 2 navigation topics.
+ * 
+ * Features:
+ * - 20Hz GPS position and heading updates
+ * - Automatic UM982 hardware configuration
+ * - RTK correction support via NTRIP/str2str integration  
+ * - Comprehensive diagnostic monitoring
+ * - Multi-constellation GNSS support (GPS, GLONASS, Galileo, BeiDou, QZSS)
+ * 
+ * Published Topics:
+ * - /gps/fix (sensor_msgs/NavSatFix): GPS position with covariance
+ * - /gps/imu (sensor_msgs/Imu): Heading and orientation data
+ * - /diagnostics (diagnostic_msgs/DiagnosticArray): System health status
+ * 
+ * @author ROS 2 Development Team
+ * @date 2025
+ */
+
 #include <rclcpp/rclcpp.hpp>
 #include <serial_driver/serial_driver.hpp>
 #include <io_context/io_context.hpp>
@@ -16,6 +39,17 @@
 using namespace drivers::serial_driver;
 using namespace drivers::common;
 
+/**
+ * @class UnicoreDriverNode
+ * @brief Main driver class for Unicore UM982 GPS receiver
+ * 
+ * This class handles serial communication with the UM982 receiver, parses PVTSLN
+ * messages, and publishes ROS 2 navigation data. It also provides diagnostic
+ * monitoring and automatic hardware configuration.
+ * 
+ * The driver operates at 20Hz update rate and supports various GPS positioning
+ * modes from single-point positioning to RTK fixed solutions.
+ */
 class UnicoreDriverNode : public rclcpp::Node
 {
 public:

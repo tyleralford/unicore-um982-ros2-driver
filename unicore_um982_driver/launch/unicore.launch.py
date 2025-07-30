@@ -1,4 +1,28 @@
 #!/usr/bin/env python3
+"""
+@file unicore.launch.py
+@brief Comprehensive launch file for Unicore UM982 GPS driver with NTRIP integration
+
+This launch file orchestrates the UM982 GPS driver node and optional str2str NTRIP client
+to provide RTK-corrected positioning data. It supports both NTRIP-enabled and NTRIP-disabled
+operation modes with comprehensive parameter management and error handling.
+
+Features:
+- Dynamic NTRIP URL construction from parameters
+- str2str executable validation with clear error messages  
+- Parameter inheritance from YAML with launch argument override
+- Conditional NTRIP client execution with respawn capability
+- Comprehensive logging and status reporting
+
+Launch Arguments:
+- enable_ntrip: Enable/disable NTRIP RTK corrections (default: true)
+- config_file: Path to YAML parameter file
+- ntrip_server, ntrip_port, ntrip_user, ntrip_pass, ntrip_mountpoint: NTRIP settings
+- gps_port, gps_baudrate: GPS serial connection settings
+
+@author ROS 2 Development Team  
+@date 2025
+"""
 
 import os
 import shutil
