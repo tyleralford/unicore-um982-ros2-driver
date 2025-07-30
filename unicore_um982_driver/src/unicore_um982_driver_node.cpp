@@ -283,7 +283,7 @@ private:
                 std::vector<uint8_t> command_data(full_command.begin(), full_command.end());
                 
                 serial_driver_->port()->send(command_data);
-                RCLCPP_INFO(this->get_logger(), "Sent command %zu/%zu: %s", i+1, config_commands.size(), command.c_str());
+                RCLCPP_DEBUG(this->get_logger(), "Sent command %zu/%zu: %s", i+1, config_commands.size(), command.c_str());
                 
                 // Wait between commands to allow processing
                 if (command == "SAVECONFIG") {

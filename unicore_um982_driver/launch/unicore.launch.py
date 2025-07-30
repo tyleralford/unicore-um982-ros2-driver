@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+
+import os
+import shutil
+import yaml
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo, OpaqueFunction
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration, TextSubstitution
+from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
+
+
+def check_str2str_and_get_ntrip_command(context):
+    """Check if str2str executable is available and construct NTRIP command."""
+    actions = []
+    
+    # Check str2str executable
+    str2str_path = shutil.which('str2str')
+    if not str2str_path:
+        actions.append(LogInfo(msg="ERROR: str2str executable not found! Please install RTKLIB. "
+                                  "See README.md for installation instructions."))
+        return actions
+    
+    actions.append(LogInfo(msg=f"Found str2str executable at: {str2str_path}"))
+    
+    # Load YAML configuration to get NTRIP parameters
+    config_file = context.launch_configurations.get('config_file', '')
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, 'r') as f:
+                config = yaml.safe_load(f)
+            
+            # Extract NTRIP parameters from the configuration
+            params = config.get('unicore_um982_driver', {}).get('ros__parameters', {})
+            ntrip_server = params.get('ntrip_server', 'rtk2go.com')
+            ntrip_port = params.get('ntrip_port', 2101)
+            ntrip_user = params.get('ntrip_user', 'user')
+            ntrip_pass = params.get('ntrip_pass', 'password')
+            ntrip_mountpoint = params.get('ntrip_mountpoint', 'FIXED')
+            port = params.get('port', '/dev/ttyUSB0')
+            baudrate = params.get('baudrate', 230400)
+            
+            # Construct NTRIP URL
+            ntrip_url = f"ntrip://{ntrip_user}:{ntrip_pass}@{ntrip_server}:{ntrip_port}/{ntrip_mountpoint}"
+            serial_out = f"serial://{port}:{baudrate}:8:n:1:off"
+            
+            actions.append(LogInfo(msg=f"NTRIP URL: {ntrip_url}"))
+            actions.append(LogInfo(msg=f"Serial output: {serial_out}"))
+            
+        except Exception as e:
+            actions.append(LogInfo(msg=f"Error reading config file {config_file}: {e}"))
+    else:
+        actions.append(LogInfo(msg=f"Config file not found: {config_file}"))
+    
+    return actions
+
+
+def generate_launch_description():
+    # Get package directory
+    pkg_dir = get_package_share_directory('unicore_um982_driver')
+    config_file = os.path.join(pkg_dir, 'config', 'unicore_driver_params.yaml')
+    
+    # Declare launch arguments
+    config_file_arg = DeclareLaunchArgument(
+        'config_file',
+        default_value=config_file,
+        description='Path to the parameter configuration file'
+    )
+    
+    enable_ntrip_arg = DeclareLaunchArgument(
+        'enable_ntrip',
+        default_value='true',
+        description='Enable NTRIP client (str2str) for RTK corrections'
+    )
+    
+    ntrip_server_arg = DeclareLaunchArgument(
+        'ntrip_server',
+        default_value='rtk2go.com',
+        description='NTRIP caster server hostname'
+    )
+    
+    ntrip_port_arg = DeclareLaunchArgument(
+        'ntrip_port',
+        default_value='2101',
+        description='NTRIP caster port'
+    )
+    
+    ntrip_user_arg = DeclareLaunchArgument(
+        'ntrip_user',
+        default_value='user',
+        description='NTRIP username'
+    )
+    
+    ntrip_pass_arg = DeclareLaunchArgument(
+        'ntrip_pass',
+        default_value='password',
+        description='NTRIP password'
+    )
+    
+    ntrip_mountpoint_arg = DeclareLaunchArgument(
+        'ntrip_mountpoint',
+        default_value='FIXED',
+        description='NTRIP mountpoint'
+    )
+    
+    gps_port_arg = DeclareLaunchArgument(
+        'gps_port',
+        default_value='/dev/ttyUSB0',
+        description='GPS serial port device'
+    )
+    
+    gps_baudrate_arg = DeclareLaunchArgument(
+        'gps_baudrate',
+        default_value='230400',
+        description='GPS serial port baudrate'
+    )
+    
+    # Check for str2str executable and NTRIP configuration
+    check_ntrip_setup = OpaqueFunction(function=check_str2str_and_get_ntrip_command)
+    
+    # Create the driver node
+    driver_node = Node(
+        package='unicore_um982_driver',
+        executable='unicore_um982_driver_node',
+        name='unicore_um982_driver',
+        parameters=[LaunchConfiguration('config_file')],
+        output='screen',
+        emulate_tty=True
+    )
+    
+    # Construct NTRIP URL dynamically
+    ntrip_url = [
+        'ntrip://',
+        LaunchConfiguration('ntrip_user'),
+        ':',
+        LaunchConfiguration('ntrip_pass'),
+        '@',
+        LaunchConfiguration('ntrip_server'),
+        ':',
+        LaunchConfiguration('ntrip_port'),
+        '/',
+        LaunchConfiguration('ntrip_mountpoint')
+    ]
+    
+    # Construct serial output dynamically
+    serial_output = [
+        'serial://',
+        LaunchConfiguration('gps_port'),
+        ':',
+        LaunchConfiguration('gps_baudrate'),
+        ':8:n:1:off'
+    ]
+    
+    # Create the NTRIP client process
+    ntrip_client = ExecuteProcess(
+        cmd=[
+            'str2str',
+            '-in', ntrip_url,
+            '-out', serial_output,
+            '-t', '5',  # 5 second timeout
+            '-s', '1'   # 1 second reconnection interval
+        ],
+        output='screen',
+        condition=IfCondition(LaunchConfiguration('enable_ntrip')),
+        respawn=True,
+        respawn_delay=5.0,
+        shell=False
+    )
+    
+    # Log NTRIP configuration
+    ntrip_info = LogInfo(
+        msg="Starting NTRIP client with str2str. RTK corrections will be streamed to the GPS receiver.",
+        condition=IfCondition(LaunchConfiguration('enable_ntrip'))
+    )
+    
+    return LaunchDescription([
+        config_file_arg,
+        enable_ntrip_arg,
+        ntrip_server_arg,
+        ntrip_port_arg,
+        ntrip_user_arg,
+        ntrip_pass_arg,
+        ntrip_mountpoint_arg,
+        gps_port_arg,
+        gps_baudrate_arg,
+        check_ntrip_setup,
+        ntrip_info,
+        driver_node,
+        ntrip_client
+    ])

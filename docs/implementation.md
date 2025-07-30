@@ -160,18 +160,18 @@ This document provides a detailed breakdown of the tasks required to build, test
 
 **Goal:** Integrate the external `str2str` NTRIP client and create a launch file to orchestrate the driver and the client using ROS 2 parameters.
 
-*   #### **Task 8: Add NTRIP Client Parameterization**
+*   #### **Task 8: Add NTRIP Client Parameterization** ✅ **COMPLETE**
     *   **Dependencies:** Task 7
     *   **Context:** This task adds ROS 2 parameters to the YAML configuration file to allow for flexible setup of the external `str2str` NTRIP client. `str2str` is a prerequisite for this package.
     *   **Subtasks:**
-        *   [ ] Create and switch to a new feature branch: `git checkout -b feature/ntrip-params`.
-        *   [ ] In the `config/unicore_driver_params.yaml` file, add new parameters required for the NTRIP client: `ntrip_server`, `ntrip_port`, `ntrip_user`, `ntrip_pass`, and `ntrip_mountpoint`.
-        *   [ ] Populate the new parameters with example or default values.
+        *   [x] Create and switch to a new feature branch: `git checkout -b feature/ntrip-params`.
+        *   [x] In the `config/unicore_driver_params.yaml` file, add new parameters required for the NTRIP client: `ntrip_server`, `ntrip_port`, `ntrip_user`, `ntrip_pass`, and `ntrip_mountpoint`.
+        *   [x] Populate the new parameters with example or default values.
     *   **Intermediate Test:**
-        *   [ ] Use `ros2 param dump` on a running node that loads the YAML file to verify that the new NTRIP parameters are correctly loaded into the ROS parameter server.
+        *   [x] Use `ros2 param dump` on a running node that loads the YAML file to verify that the new NTRIP parameters are correctly loaded into the ROS parameter server.
     *   **Version Control:**
-        *   [ ] Commit the updated YAML file to the `feature/ntrip-params` branch.
-        *   [ ] Merge the `feature/ntrip-params` branch back into the `main` branch.
+        *   [x] Commit the updated YAML file to the `feature/ntrip-params` branch.
+        *   [x] Merge the `feature/ntrip-params` branch back into the `main` branch.
 
 *   #### **Task 9: Create the ROS 2 Launch File**
     *   **Dependencies:** Task 8
